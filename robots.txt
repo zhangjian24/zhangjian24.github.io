@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /archives/
+Allow: /categories/
+Allow: /tags/ 
+Disallow: /vendors/
+Disallow: /js/
+Disallow: /css/
+Disallow: /fonts/
+Disallow: /vendors/
+Disallow: /fancybox/
+Disallow: /baidu_verify_IZLZc3Dz1k.html
+Disallow: /404.html
+
+Sitemap: https://blog.zhangjian.ml/sitemap.xml
+Sitemap: https://blog.zhangjian.ml/baidusitemap.xml

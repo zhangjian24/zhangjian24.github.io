@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title><![CDATA[jmockit]]></title>
+    <url>%2F2018%2F09%2F16%2Fjmockit%2F</url>
+    <content type="text"><![CDATA[之前试过powermock，虽然可以mock 静态方法，但是得依赖maven 插件，而后找到了jmockit，配置非常简洁、性能高。 中文文档 脚本录制规范12345678910111213141516171819new Expectations() &#123; // 这是一个Expectations匿名内部类 &#123; // 这是这个内部类的初始化代码块，我们在这里写录制脚本，脚本的格式要遵循下面的约定 //方法调用(可是类的静态方法调用，也可以是对象的非静态方法调用) //result赋值要紧跟在方法调用后面 //...其它准备录制脚本的代码 //方法调用 //result赋值 &#125;&#125;; 还可以再写new一个Expectations，只要出现在重放阶段之前均有效。new Expectations() &#123; &#123; //...录制脚本 &#125;&#125;; mock整个类@Injectabe: 只mockjmockit初始化的实例；@Mocked: mock标注类的所有实例，包括手动实例化；@Capturing: 影响接口所有子类的实现，包括动态代理； 示例：123456789101112131415161718192021222324//Expectations对外部类的mock对象进行录制public class ExpectationsTest &#123; @Mocked Calendar cal; @Test public void testRecordOutside() &#123; new Expectations() &#123; &#123; // 对cal.get方法进行录制，并匹配参数 Calendar.YEAR cal.get(Calendar.YEAR); result = 2016;// 年份不再返回当前小时。而是返回2016年 // 对cal.get方法进行录制，并匹配参数 Calendar.HOUR_OF_DAY cal.get(Calendar.HOUR_OF_DAY); result = 7;// 小时不再返回当前小时。而是返回早上7点钟 &#125; &#125;; Assert.assertTrue(cal.get(Calendar.YEAR) == 2016); Assert.assertTrue(cal.get(Calendar.HOUR_OF_DAY) == 7); // 因为没有录制过，所以这里月份返回默认值 0 Assert.assertTrue(cal.get(Calendar.DAY_OF_MONTH) == 0); &#125; &#125; 对类部分mock123456789101112131415161718192021222324252627282930313233343536373839404142434445464748//通过Expectations对其构造函数mock对象进行录制public class ExpectationsConstructorTest2 &#123; // 把类传入Expectations的构造函数 @Test public void testRecordConstrutctor1() &#123; Calendar cal = Calendar.getInstance(); // 把待Mock的类传入Expectations的构造函数，可以达到只mock类的部分行为的目的 new Expectations(Calendar.class) &#123; &#123; // 只对get方法并且参数为Calendar.HOUR_OF_DAY进行录制 cal.get(Calendar.HOUR_OF_DAY); result = 7;// 小时永远返回早上7点钟 &#125; &#125;; Calendar now = Calendar.getInstance(); // 因为下面的调用mock过了，小时永远返回7点钟了 Assert.assertTrue(now.get(Calendar.HOUR_OF_DAY) == 7); // 因为下面的调用没有mock过，所以方法的行为不受mock影响， Assert.assertTrue(now.get(Calendar.DAY_OF_MONTH) == (new Date()).getDate()); &#125; // 把对象传入Expectations的构造函数 @Test public void testRecordConstrutctor2() &#123; Calendar cal = Calendar.getInstance(); // 把待Mock的对象传入Expectations的构造函数，可以达到只mock类的部分行为的目的，但只对这个对象影响 new Expectations(cal) &#123; &#123; // 只对get方法并且参数为Calendar.HOUR_OF_DAY进行录制 cal.get(Calendar.HOUR_OF_DAY); result = 7;// 小时永远返回早上7点钟 &#125; &#125;; // 因为下面的调用mock过了，小时永远返回7点钟了 Assert.assertTrue(cal.get(Calendar.HOUR_OF_DAY) == 7); // 因为下面的调用没有mock过，所以方法的行为不受mock影响， Assert.assertTrue(cal.get(Calendar.DAY_OF_MONTH) == (new Date()).getDate()); // now是另一个对象，上面录制只对cal对象的影响，所以now的方法行为没有任何变化 Calendar now = Calendar.getInstance(); // 不受mock影响 Assert.assertTrue(now.get(Calendar.HOUR_OF_DAY) == (new Date()).getHours()); // 不受mock影响 Assert.assertTrue(now.get(Calendar.DAY_OF_MONTH) == (new Date()).getDate()); &#125;&#125; 验证12345678910111213141516171819new Verifications() &#123; // 这是一个Verifications匿名内部类 &#123; // 这是这个内部类的初始化代码块，我们在这里写验证脚本，脚本的格式要遵循下面的约定 //方法调用(可是类的静态方法调用，也可以是对象的非静态方法调用) //times/minTimes/maxTime 表示调用次数的限定要求。赋值要紧跟在方法调用后面，也可以不写（表示只要调用过就行，不限次数） //...其它准备验证脚本的代码 //方法调用 //times/minTimes/maxTime赋值 &#125;&#125;; 还可以再写new一个Verifications，只要出现在重放阶段之后均有效。new Verifications() &#123; &#123; //...录制脚本 &#125;&#125;;]]></content>
+      <categories>
+        <category>技术</category>
+        <category>后端</category>
+      </categories>
+      <tags>
+        <tag>mock</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[powermock]]></title>
+    <url>%2F2018%2F09%2F16%2Fpowermock%2F</url>
+    <content type="text"><![CDATA[特性首先mockito框架，可以mock,也可以spy,但是不能mock静态方法，和私有方法，然而powermock支持;mockito中文文档 maven 依赖1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253&lt;properties&gt; &lt;powermock.version&gt;1.7.1&lt;/powermock.version&gt; &lt;mockito1.version&gt;1.10.19&lt;/mockito1.version&gt;&lt;/properties&gt;&lt;dependencies&gt; &lt;!-- 依赖 --&gt; &lt;dependency&gt; &lt;groupId&gt;org.springframework&lt;/groupId&gt; &lt;artifactId&gt;spring-test&lt;/artifactId&gt; &lt;version&gt;$&#123;spring.version&#125;&lt;/version&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;junit&lt;/groupId&gt; &lt;artifactId&gt;junit&lt;/artifactId&gt; &lt;version&gt;4.12&lt;/version&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;org.mockito&lt;/groupId&gt; &lt;artifactId&gt;mockito-core&lt;/artifactId&gt; &lt;version&gt;$&#123;mockito1.version&#125;&lt;/version&gt; &lt;scope&gt;test&lt;/scope&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;org.powermock&lt;/groupId&gt; &lt;artifactId&gt;powermock-module-junit4&lt;/artifactId&gt; &lt;version&gt;$&#123;powermock.version&#125;&lt;/version&gt; &lt;scope&gt;test&lt;/scope&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;org.powermock&lt;/groupId&gt; &lt;artifactId&gt;powermock-api-mockito&lt;/artifactId&gt; &lt;version&gt;$&#123;powermock.version&#125;&lt;/version&gt; &lt;scope&gt;test&lt;/scope&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;org.powermock&lt;/groupId&gt; &lt;artifactId&gt;powermock-module-junit4-rule-agent&lt;/artifactId&gt; &lt;version&gt;$&#123;powermock.version&#125;&lt;/version&gt; &lt;scope&gt;test&lt;/scope&gt; &lt;/dependency&gt;&lt;/dependencies&gt;&lt;build&gt; &lt;!-- 插件配置 --&gt; &lt;plugins&gt; &lt;plugin&gt; &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt; &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt; &lt;configuration&gt; &lt;argLine&gt;-javaagent:$&#123;settings.localRepository&#125;/org/powermock/powermock-module-javaagent/1.7.1/powermock-module-javaagent-1.7.1.jar -XX:-UseSplitVerifier&lt;/argLine&gt; &lt;/configuration&gt; &lt;/plugin&gt; &lt;/plugins&gt;&lt;/build&gt; 测试用例12345678910111213141516171819202122232425262728293031323334353637383940@WebAppConfiguration@SpringBootApplication@ContextConfiguration(locations = &#123;"classpath:spring-application.xml"&#125;)@RunWith(SpringJUnit4ClassRunner.class)@PrepareForTest(HttpPayUtil.class)//准备静态类public class ControllerTest &#123; protected MockMvc mockMvc; @Rule public PowerMockRule rule = new PowerMockRule(); @Autowired protected WebApplicationContext webApplicationContext; @Before public void setUp() throws Exception &#123; PropertyConfigurator.configure(new FileInputStream(ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX+"log4j.properties"))); mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build(); &#125; /** * * @throws Exception */ @Test public void test()throws Exception&#123; //mock静态类 PowerMockito.mockStatic(HttpPayUtil.class); //录制脚本 PowerMockito.when(HttpPayUtil.queryOrderDetail("1", PayConstants.PaySource.WEAPP)) .thenReturn(new String[]&#123;"2","3"&#125;); String[] stss = HttpPayUtil.queryOrderDetail("1", PayConstants.PaySource.WEAPP); System.out.println(stss[0]); System.out.println(stss[1]); &#125;&#125; 运行测试1mvn test]]></content>
+      <categories>
+        <category>技术</category>
+        <category>后端</category>
+      </categories>
+      <tags>
+        <tag>mock</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[vue-阿里云上传组件]]></title>
+    <url>%2F2018%2F09%2F16%2Fvue-%E9%98%BF%E9%87%8C%E4%BA%91%E4%B8%8A%E4%BC%A0%E7%BB%84%E4%BB%B6%2F</url>
+    <content type="text"><![CDATA[vue中文文档 elementui文档 elementui源码 复用elementUI的el-upload，并覆盖http-request方法，实现自定义的上传行为； 通过computed的属性带入初始链接； 通过prop.sync/update:prop，回传链接； 用html的audio标签自动获取音频时长;]]></content>
+      <categories>
+        <category>技术</category>
+        <category>前端</category>
+      </categories>
+      <tags>
+        <tag>vue</tag>
+        <tag>组件</tag>
+        <tag>上传</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[vim高级功能]]></title>
+    <url>%2F2018%2F09%2F16%2Fvim%E9%AB%98%E7%BA%A7%E5%8A%9F%E8%83%BD%2F</url>
+    <content type="text"><![CDATA[多文件编辑 vim 1.txt 2.txt 在vim命令后面跟多个文件名，即可同时编辑多个文件 命令模式下，:n，切换到下一个文件 命令模式下，:N，编辑上一个文件 :n!/:N，丢弃未保存的内容，强制切换 命令模式下，:e 3.txt，编辑新文件“3.txt” 命令模式下，:e#，回到上一次编辑的文件 命令模式下，:ls，列出同时编辑的多个文件项目列表 命令模式下，:b 2.txt（文件名）/:b 2（编辑列表中的文件项目编号），可直接切换到指定的文件 命令模式下，:bd 2.txt（文件名）/:bd 2（编辑列表中的文件项目编号），将文件项目从编辑列表中删除 命令模式下，:e! 4.txt，放弃未保存的内容，强制打开文件 命令模式下，:f，显示正在编辑的文件名 命令模式下，:f new.txt，重命名当前编辑的文件名为“new.txt” 可视模式/选择模式 普通模式下，9G（大写），跳转到第9行 普通模式下，v（小写），进入字符选择模式，然后利用光标移动键移动光标，光标走过的字符被选中，再次v（小写）取消选择 普通模式下，V（大写），进入行选择模式，可以上下移动光标选择更多行，再次V（大写）取消选择 普通模式下，ctrl+v（小写），进入区域选择模式，再次ctrl+v（小写）取消选择 在选择模式（字符/行/区域）下，d删除选取内容，y复制选取内容，&gt;选中内容缩进 窗口命令(ctrl+w)命令模式下，:sp 1.txt，横向打开视窗编辑1.txt文件 命令模式下，:vsp 1.txt，纵向打开视窗编辑1.txt文件 普通模式下，ctrl+w &lt;以下命令&gt;： s，水平分割窗口 v，垂直分割窗口 q，结束分割出来的新窗口，有未保存的内容则需要，q! j、k、h、l，移动到上下左右窗口 大写jkhl，将窗口移动到上下左右 -、+，减小/增加视窗的的高度 外部命令命令模式下，!可执行外部shell命令，如:!ls显示当前目录的内容 多行编辑ctrl +v 选取多行，shift+i进行插入，然后两次esc 退出 复制 单行复制在命令模式下，将光标移动到将要复制的行处，按“yy”进行复制； 多行复制在命令模式下，将光标移动到将要复制的首行处，按“nyy”复制n行；其中n为1、2， 粘贴在命令模式下，将光标移动到将要粘贴的行处，按“p”进行粘贴 删除x : 删除光标后一个字符dd : 删除光标所在行,n dd 删除指定的行数 撤销u : 一步一步撤销Ctr-r : 反撤销]]></content>
+      <categories>
+        <category>工具</category>
+        <category>文本编辑</category>
+      </categories>
+      <tags>
+        <tag>vim</tag>
+        <tag>编辑器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[CC助手-超越剪贴板]]></title>
+    <url>%2F2018%2F09%2F16%2FCC%E5%8A%A9%E6%89%8B-%E8%B6%85%E8%B6%8A%E5%89%AA%E8%B4%B4%E6%9D%BF%2F</url>
+    <content type="text"><![CDATA[随时收藏-两次^CTRL+C 对比：| 没有cc助手 | cc助手 || ———————————————————— | ——————– || 1.选中文字，^Ctrl-C进行复制；2.找到笔记程序并打开；3.新建一篇笔记；4.^Ctrl-V 粘贴内容；5.切换回网页继续阅读。OK，刚才看到哪了？ | ^Ctrl-C再^Ctrl-C | Anything, Anywhere 只要能复制的地方，就可以收藏 插件系统 OCR 单词翻译 开放的插件系统 支持 JavaScript 编写插件，海量的开源资源任你发挥（插件体系尚在完善中，正式发布时会开放） 查看 ^Ctrl-Alt-C快捷键，激活列表页 Tab 以及左右箭头，切换 tab 上下箭头切换焦点 任意字符输入进入搜索状态， / 筛选不同类型（文字、图片），# 筛选分类 Esc取消搜索或者隐藏界面 CC助手下载地址：https://ccyixia.com]]></content>
+      <categories>
+        <category>工具</category>
+        <category>效率</category>
+      </categories>
+      <tags>
+        <tag>复制</tag>
+        <tag>笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[BandwagonHost-番#羽]]></title>
+    <url>%2F2018%2F09%2F08%2FBandwagonHost-%E7%95%AA-%E7%BE%BD%2F</url>
+    <content type="text"><![CDATA[国外服务器注册账号BandwagonHost官网 购买服务器 点击VPS Hosting, 选择$19.99 下面的order kvm ; 然后点击 Add Cart, 也就是 加入购物车 的意思; 然后点击Checkout, 也就是结算 ; 选择 支付宝 支付，完成订单； 接下来的页面，点解pay now ，进行支付宝付款，就购买完成。 配置服务器 登录网站，client area -&gt; my services -&gt; control panel ，进入kvm 管理界面 ; 默认安装的是centos，个人更习惯Ubuntu，先在 main controls 里面stop 掉机器，然后 install new os 可以选择安装Ubuntu系统； 然后，会收到邮件，告知，root密码，ssh端口； shadow-socks配置服务端 安装 12apt-get install python-pippip install shadowsocks 使用 1ssserver -p 443 -k password -m rc4-md5 如果要后台运行： 1sudo ssserver -p 443 -k password -m rc4-md5 --user nobody -d start 如果要停止： 1sudo ssserver -d stop 如果要检查日志： 1sudo less /var/log/shadowsocks.log 报错 1AttributeError: /usr/local/ssl/lib/libcrypto.so.1.1: undefined symbol: EVP_CIPHER_CTX_cleanup vim打开文件openssl.py 路径不同根据报错路径而定 修改libcrypto.EVP_CIPHER_CTX_cleanup.argtypes :%s/cleanup/reset/ :x 以上两条为VIM命令， 替换文中libcrypto.EVP_CIPHER_CTX_cleanup.argtypes 为libcrypto.EVP_CIPHER_CTX_reset.argtypes 共两处，并保存 重新运行 客户端github 上下载window客户端 ubuntu客户端: 123sudo add-apt-repository ppa:hzwhuang/ss-qt5sudo apt-get updatesudo apt-get install shadowsocks-qt5 debiancn源12345echo "deb https://repo.debiancn.org/ testing main" | sudo tee /etc/apt/sources.list.d/debiancn.list;wget https://repo.debiancn.org/pool/main/d/debiancn-keyring/debiancn-keyring_0~20161212_all.deb -O /tmp/debiancn-keyring.deb;sudo apt install /tmp/debiancn-keyring.deb;sudo apt update;rm /tmp/debiancn-keyring.deb; https://github.com/debiancn/repo]]></content>
+      <categories>
+        <category>工具</category>
+        <category>网络</category>
+      </categories>
+      <tags>
+        <tag>vpn</tag>
+      </tags>
+  </entry>
+</search>
