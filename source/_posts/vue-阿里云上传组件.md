@@ -22,10 +22,10 @@ password:
 - 通过`prop.sync`/`update:prop`，回传链接；
 - 用html的`audio`标签自动获取音频时长;
 
-![sp180524_223524.png-187.5kB][4]
+ {% asset_img vue-code.png vue-code %}
 
 
-[1]:https://cn.vuejs.org/v2/guide/
+[1]: https://cn.vuejs.org/v2/guide/
 [2]: http://element.eleme.io/#/
 [3]: https://github.com/ElemeFE/element
 [4]: http://static.zybuluo.com/zhangjian24/h29h0hfiqesag9i08x2wbxvw/sp180524_223524.png
